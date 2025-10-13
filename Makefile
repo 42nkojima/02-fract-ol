@@ -6,7 +6,7 @@
 #    By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/05 18:18:21 by nkojima           #+#    #+#              #
-#    Updated: 2025/10/13 18:06:03 by nkojima          ###   ########.fr        #
+#    Updated: 2025/10/13 18:23:00 by nkojima          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,17 @@ RESET = \033[0m
 # ===============================
 NAME = fractol
 CFLAGS = -Wall -Werror -Wextra
+
+# OS Detection
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Linux)
+    CFLAGS = -Wall -Werror -Wextra
+    LDFLAGS = -L$(MLX_PATH) -lmlx -lXext -lX11 -lm
+else ifeq ($(UNAME_S),Darwin)
+    CFLAGS = -Wall -Werror -Wextra
+    LDFLAGS = -L$(MLX_PATH) -lmlx -L/opt/X11/lib -lXext -lX11 -framework OpenGL -framework AppKit
+endif
 
 # ===============================
 #         Directory Paths       #
@@ -53,9 +64,8 @@ MLX = $(MLX_PATH)/libmlx.a
 # ===============================
 all: $(NAME)
 
-# $(NAME): $(OBJ_FILES) $(LIBFT) $(PRINTF) $(MLX)
-$(NAME): $(OBJ_FILES) $(MLX)
-	@$(CC) $(CFLAGS) -o $@ $^ -L$(MLX_PATH) -lmlx -L/opt/X11/lib -lXext -lX11 -framework OpenGL -framework AppKit
+$(NAME): $(OBJ_FILES) $(LIBFT) $(MLX)
+	@$(CC) $(CFLAGS) -o $@ $(OBJ_FILES) -L$(LIBFT_PATH) -lft $(LDFLAGS)
 	@echo "$(NAME): $(GREEN)object files were created $(RESET)"
 	@echo "$(NAME): $(GREEN)$(NAME) was created$(RESET)"
 
@@ -67,21 +77,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(MLX_PATH)
 # ===============================
 #       Library Dependencies    #
 # ===============================
-# $(LIBFT): | $(LIBFT_PATH)
-# 	@$(MAKE) -C $(LIBFT_PATH)
-# 	@echo "$(NAME): $(GREEN)$(LIBFT) was created$(RESET)"
+$(LIBFT): | $(LIBFT_PATH)
+	@$(MAKE) -C $(LIBFT_PATH)
+	@echo "$(NAME): $(GREEN)$(LIBFT) was created$(RESET)"
 
-# $(LIBFT_PATH):
-# 	@git clone git@github.com:42nkojima/00-libft.git $(LIBFT_PATH)
-# 	@echo "$(NAME): $(GREEN)$(LIBFT_PATH) was cloned$(RESET)"
-
-# $(PRINTF): | $(PRINTF_PATH)
-# 	@$(MAKE) -C $(PRINTF_PATH)
-# 	@echo "$(NAME): $(GREEN)$(PRINTF) was created$(RESET)"
-
-# $(PRINTF_PATH):
-# 	@git clone git@github.com:42nkojima/01-ft_printf.git $(PRINTF_PATH)
-# 	@echo "$(NAME): $(GREEN)$(PRINTF_PATH) was cloned$(RESET)"
+$(LIBFT_PATH):
+	@git clone git@github.com:42nkojima/00-libft.git $(LIBFT_PATH)
+	@echo "$(NAME): $(GREEN)$(LIBFT_PATH) was cloned$(RESET)"
 
 $(MLX): | $(MLX_PATH)
 	@$(MAKE) -C $(MLX_PATH)
@@ -95,19 +97,30 @@ $(MLX_PATH):
 #         Clean Rules           #
 # ===============================
 clean:
-	@$(MAKE) -C $(LIBFT_PATH) clean
-	@$(MAKE) -C $(PRINTF_PATH) clean
-	@$(MAKE) -C $(MLX_PATH) clean
-	@rm -r $(OBJ_DIR)
-	@echo "$(NAME): $(RED)$(OBJ_DIR) was deleted$(RESET)"
-	@echo "$(NAME): $(RED)object files were deleted$(RESET)"
+	@if [ -d $(LIBFT_PATH) ]; then $(MAKE) -C $(LIBFT_PATH) clean; fi
+	@if [ -d $(OBJ_DIR) ]; then \
+		rm -rf $(OBJ_DIR); \
+		echo "$(NAME): $(RED)$(OBJ_DIR) was deleted$(RESET)"; \
+	fi
 
 fclean: clean
-	@$(MAKE) -C $(LIBFT_PATH) fclean
-	@echo "$(NAME): $(RED)$(LIBFT) was deleted$(RESET)"
-	@rm $(NAME)
-	@echo "$(NAME): $(RED)$(NAME) was deleted$(RESET)"
+	@if [ -d $(LIBFT_PATH) ]; then $(MAKE) -C $(LIBFT_PATH) fclean; fi
+	@if [ -f $(NAME) ]; then \
+		rm -f $(NAME); \
+		echo "$(NAME): $(RED)$(NAME) was deleted$(RESET)"; \
+	fi
+
+# Include libraries in clean
+distclean: fclean
+	@if [ -d $(MLX_PATH) ]; then \
+		rm -rf $(MLX_PATH); \
+		echo "$(NAME): $(RED)$(MLX_PATH) was deleted$(RESET)"; \
+	fi
+	@if [ -d $(LIBFT_PATH) ]; then \
+		rm -rf $(LIBFT_PATH); \
+		echo "$(NAME): $(RED)$(LIBFT_PATH) was deleted$(RESET)"; \
+	fi
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re distclean
