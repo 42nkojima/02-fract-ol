@@ -6,16 +6,33 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/13 18:39:07 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/13 23:40:50 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
+typedef struct s_img
+{
+	void *img;
+	char *addr;
+	int bits_per_pixel;
+	int line_length;
+	int endian;
+}	t_img;
+
 typedef struct s_data
 {
 	void *mlx;
 	void *window;
+	t_img img;
+	int width;
+	int height;
+	double min_re;
+	double max_re;
+	double min_im;
+	double max_im;
+	int max_iter;
 }	t_data;
 
 // キーフックを定義
