@@ -6,7 +6,7 @@
 #    By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/05 18:18:21 by nkojima           #+#    #+#              #
-#    Updated: 2025/10/13 18:23:00 by nkojima          ###   ########.fr        #
+#    Updated: 2025/10/14 11:25:39 by nkojima          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,6 @@ CFLAGS = -Wall -Werror -Wextra
 
 # OS Detection
 UNAME_S := $(shell uname -s)
-
 ifeq ($(UNAME_S),Linux)
     CFLAGS = -Wall -Werror -Wextra
     LDFLAGS = -L$(MLX_PATH) -lmlx -lXext -lX11 -lm
