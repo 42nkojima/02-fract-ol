@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/15 11:29:12 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/15 11:43:06 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,19 @@ double pixel_to_imag(int y, t_data *data)
 // TODO: 後で色を変える
 int get_color(int iter, int max_iter)
 {
+	int r;
+	int g;
+	int b;
+	double t;
+
 	if (iter == max_iter)
 		return (0x00000000);
-	else
-		return (0x00FFFFFF);
+	t = (double)iter / max_iter;
+
+	r = (int)(9 * (1 - t) * t * t * t * 255);
+	g = (int)(15 * (1 - t) * (1 - t) * t * t * 255);
+	b = (int)(8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255);
+	return ((r << 16) | (g << 8) | b);
 }
 
 // * マンデルブロ集合を描画
