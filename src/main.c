@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/15 11:43:06 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/15 14:28:52 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,46 @@ int	key_hook(int keycode, t_data *data)
 	return (0);
 }
 
+// マウスの位置を中心にズーム
+int mouse_hook(int button, int x, int y, t_data *data)
+{
+	double mouse_real;
+	double mouse_imag;
+	double zoom;
+	double new_width;
+	double new_height;
+	double ratio_x;
+	double ratio_y;
+
+	// マウス位置の複素数座標を計算
+	mouse_real = pixel_to_real(x, data);
+	mouse_imag = pixel_to_imag(y, data);
+
+	if (button == 4)
+		zoom = 0.8;
+	else if (button == 5)
+		zoom = 1.25;
+	else
+		return (0);
+
+	// 新しい範囲を計算
+	new_width = (data->max_real - data->min_real) * zoom;
+	new_height = (data->max_imag - data->min_imag) * zoom;
+
+	// マウス位置の相対比率（画面内のどこにあるか）
+	ratio_x = (double)x / data->width;
+	ratio_y = (double)y / data->height;
+
+	// マウス位置を基準に、新しい中心座標を計算
+	data->min_real = mouse_real - new_width * ratio_x;
+	data->max_real = mouse_real + new_width * (1.0 - ratio_x);
+	data->min_imag = mouse_imag - new_height * (1.0 - ratio_y);
+	data->max_imag = mouse_imag + new_height * ratio_y;
+
+	draw_mandelbrot(data);
+	return (0);
+}
+
 int	main(void)
 {
 	t_data	data;
@@ -154,7 +194,7 @@ int	main(void)
 	data.max_real = 1.0;
 	data.min_imag = -1.5;
 	data.max_imag = 1.5;
-	data.max_iter = 100;
+	data.max_iter = 500;
 	data.mlx = mlx_init();
 	if (!data.mlx)
 		return (1);
@@ -169,6 +209,7 @@ int	main(void)
 	if (!data.img.addr)
 		return (1);
 	mlx_key_hook(data.window, key_hook, &data);
+	mlx_mouse_hook(data.window, mouse_hook, &data);
 	draw_mandelbrot(&data);
 	mlx_loop(data.mlx);
 	return (0);
