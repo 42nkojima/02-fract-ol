@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/15 16:09:56 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/15 16:43:55 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,27 +131,52 @@ void draw_mandelbrot(t_data *data)
 	mlx_put_image_to_window(data->mlx, data->window, data->img.img, 0, 0);
 }
 
-// ウィンドウのxボタンが押された時の処理
-int close_hook(t_data *data)
+int cleanup_and_exit(t_data *data)
 {
 	mlx_destroy_window(data->mlx, data->window);
 	mlx_destroy_display(data->mlx);
 	free(data->mlx);
 	exit(0);
-
 	return (0);
+}
+
+// 移動処理
+void move_view(t_data *data, double shift_real, double shift_imag)
+{
+	data->min_real += shift_real;
+	data->max_real += shift_real;
+	data->min_imag += shift_imag;
+	data->max_imag += shift_imag;
+	draw_mandelbrot(data);
+}
+
+// ウィンドウのxボタンが押された時の処理
+int close_hook(t_data *data)
+{
+	return (cleanup_and_exit(data));
 }
 
 // ウィンドウを閉じるキーフックを定義
 int	key_hook(int keycode, t_data *data)
 {
+	double shift_x;
+	double shift_y;
+
 	if (keycode == KEY_ESC)
-	{
-		mlx_destroy_window(data->mlx, data->window);
-		mlx_destroy_display(data->mlx);
-		free(data->mlx);
-		exit(0);
-	}
+	return (cleanup_and_exit(data));
+
+	shift_x = (data->max_real - data->min_real) * 0.1;
+	shift_y = (data->max_imag - data->min_imag) * 0.1;
+
+	if (keycode == KEY_LEFT)
+		move_view(data, -shift_x, 0);
+	else if (keycode == KEY_UP)
+		move_view(data, 0, shift_y);
+	else if (keycode == KEY_RIGHT)
+		move_view(data, shift_x, 0);
+	else if (keycode == KEY_DOWN)
+		move_view(data, 0, -shift_y);
+
 	return (0);
 }
 
