@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/15 14:28:52 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/15 16:09:56 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,17 @@ void draw_mandelbrot(t_data *data)
 	mlx_put_image_to_window(data->mlx, data->window, data->img.img, 0, 0);
 }
 
+// ウィンドウのxボタンが押された時の処理
+int close_hook(t_data *data)
+{
+	mlx_destroy_window(data->mlx, data->window);
+	mlx_destroy_display(data->mlx);
+	free(data->mlx);
+	exit(0);
+
+	return (0);
+}
+
 // ウィンドウを閉じるキーフックを定義
 int	key_hook(int keycode, t_data *data)
 {
@@ -208,6 +219,7 @@ int	main(void)
 			&data.img.line_length, &data.img.endian);
 	if (!data.img.addr)
 		return (1);
+	mlx_hook(data.window, 17, 0, close_hook, &data);
 	mlx_key_hook(data.window, key_hook, &data);
 	mlx_mouse_hook(data.window, mouse_hook, &data);
 	draw_mandelbrot(&data);
