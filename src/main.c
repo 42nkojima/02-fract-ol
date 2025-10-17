@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/15 16:43:55 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 12:16:32 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,16 +25,16 @@ typedef struct s_img
 
 typedef struct s_data
 {
-	void	*mlx;
-	void	*window;
-	t_img	img;
-	int		width;
-	int		height;
-	double	min_real;
-	double	max_real;
-	double	min_imag;
-	double	max_imag;
-	int		max_iter;
+	void		*mlx;
+	void		*window;
+	t_img		img;
+	int			width;
+	int			height;
+	long double	min_real;
+	long double	max_real;
+	long double	min_imag;
+	long double	max_imag;
+	int			max_iter;
 }			t_data;
 
 // 指定された座標に色を書き込む
@@ -53,17 +53,21 @@ void	put_pixel(t_img *img, int x, int y, int color)
 
 // マンデルブロ計算関数
 // * https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%B3%E3%83%87%E3%83%AB%E3%83%96%E3%83%AD%E9%9B%86%E5%90%88
-int	mandelbrot(double c_real, double c_imag, int max_iter)
+int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 {
-	double z_real = 0.0;
-	double z_imag = 0.0;
-	int iter = 0;
+	long double	z_real;
+	long double	z_imag;
+	long double	tmp_real;
+	int			iter;
 
+	z_real = 0.0;
+	z_imag = 0.0;
+	iter = 0;
 	// x^2 + y^2 <=4 -> まだ発散していない
 	// iter < max_iter -> まだ最大反復回数に達していない
 	while (z_real * z_real + z_imag * z_imag <= 4.0 && iter < max_iter)
 	{
-		double tmp_real = z_real * z_real - z_imag * z_imag + c_real;
+		tmp_real = z_real * z_real - z_imag * z_imag + c_real;
 		z_imag = 2.0 * z_real * z_imag + c_imag;
 		z_real = tmp_real;
 		iter++;
@@ -73,15 +77,15 @@ int	mandelbrot(double c_real, double c_imag, int max_iter)
 
 // 座標変換関数 (ピクセル -> 複素数)
 // * 座標から褎素数の実部を計算する
-double pixel_to_real(int x, t_data *data)
+long double	pixel_to_real(int x, t_data *data)
 {
-	return (data->min_real + (double)x / data->width * (data->max_real - data->min_real));
+	return (data->min_real + (long double)x / data->width * (data->max_real - data->min_real));
 }
 
 // * 座標から褎素数の虚部を計算する
-double pixel_to_imag(int y, t_data *data)
+long double	pixel_to_imag(int y, t_data *data)
 {
-	return (data->min_imag + (double)y / data->height * (data->max_imag - data->min_imag));
+	return (data->min_imag + (long double)y / data->height * (data->max_imag - data->min_imag));
 }
 
 // * 反復回数から色を決定
@@ -106,12 +110,12 @@ int get_color(int iter, int max_iter)
 // * マンデルブロ集合を描画
 void draw_mandelbrot(t_data *data)
 {
-	int x;
-	int y;
-	double c_real;
-	double c_imag;
-	int iter;
-	int color;
+	int			x;
+	int			y;
+	long double	c_real;
+	long double	c_imag;
+	int			iter;
+	int			color;
 
 	y = 0;
 	while (y < data->height)
@@ -141,7 +145,7 @@ int cleanup_and_exit(t_data *data)
 }
 
 // 移動処理
-void move_view(t_data *data, double shift_real, double shift_imag)
+void	move_view(t_data *data, long double shift_real, long double shift_imag)
 {
 	data->min_real += shift_real;
 	data->max_real += shift_real;
@@ -159,12 +163,11 @@ int close_hook(t_data *data)
 // ウィンドウを閉じるキーフックを定義
 int	key_hook(int keycode, t_data *data)
 {
-	double shift_x;
-	double shift_y;
+	long double	shift_x;
+	long double	shift_y;
 
 	if (keycode == KEY_ESC)
-	return (cleanup_and_exit(data));
-
+		return (cleanup_and_exit(data));
 	shift_x = (data->max_real - data->min_real) * 0.1;
 	shift_y = (data->max_imag - data->min_imag) * 0.1;
 
@@ -181,15 +184,15 @@ int	key_hook(int keycode, t_data *data)
 }
 
 // マウスの位置を中心にズーム
-int mouse_hook(int button, int x, int y, t_data *data)
+int	mouse_hook(int button, int x, int y, t_data *data)
 {
-	double mouse_real;
-	double mouse_imag;
-	double zoom;
-	double new_width;
-	double new_height;
-	double ratio_x;
-	double ratio_y;
+	long double	mouse_real;
+	long double	mouse_imag;
+	long double	zoom;
+	long double	new_width;
+	long double	new_height;
+	long double	ratio_x;
+	long double	ratio_y;
 
 	// マウス位置の複素数座標を計算
 	mouse_real = pixel_to_real(x, data);
