@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 17:27:11 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 17:34:35 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,7 @@ int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 	z_real = 0.0;
 	z_imag = 0.0;
 	iter = 0;
-	// x^2 + y^2 <=4 -> まだ発散していない
-	// iter < max_iter -> まだ最大反復回数に達していない
-	while (z_real * z_real + z_imag * z_imag <= 4.0 && iter < max_iter)
+	while (z_real * z_real + z_imag * z_imag <= ESCAPE_RADIUS && iter < max_iter)
 	{
 		tmp_real = z_real * z_real - z_imag * z_imag + c_real;
 		z_imag = 2.0 * z_real * z_imag + c_imag;
@@ -60,7 +58,7 @@ int	julia(long double z_real, long double z_imag, t_data *data)
 	int			iter;
 
 	iter = 0;
-	while (z_real * z_real + z_imag * z_imag <= 4.0 && iter < data->fractal.max_iter)
+	while (z_real * z_real + z_imag * z_imag <= ESCAPE_RADIUS && iter < data->fractal.max_iter)
 	{
 		tmp_real = z_real * z_real - z_imag * z_imag + data->fractal.julia_c_real;
 		z_imag = 2.0 * z_real * z_imag + data->fractal.julia_c_imag;
@@ -93,12 +91,12 @@ int get_color(int iter, int max_iter)
 	double t;
 
 	if (iter == max_iter)
-		return (0x00000000);
+		return (COLOR_BLACK);
 	t = (double)iter / max_iter;
 
-	r = (int)(9 * (1 - t) * t * t * t * 255);
-	g = (int)(15 * (1 - t) * (1 - t) * t * t * 255);
-	b = (int)(8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255);
+	r = (int)(9 * (1 - t) * t * t * t * RGB_MAX);
+	g = (int)(15 * (1 - t) * (1 - t) * t * t * RGB_MAX);
+	b = (int)(8.5 * (1 - t) * (1 - t) * (1 - t) * t * RGB_MAX);
 	return ((r << 16) | (g << 8) | b);
 }
 
@@ -120,7 +118,7 @@ void draw_fractal(t_data *data)
 		{
 			c_real = pixel_to_real(x, data);
 			c_imag = pixel_to_imag(y, data);
-			if (data->fractal.type == 0)
+			if (data->fractal.type == FRACTAL_MANDELBROT)
 				iter = mandelbrot(c_real, c_imag, data->fractal.max_iter);
 			else
 				iter = julia(c_real, c_imag, data);
@@ -160,8 +158,8 @@ int	key_hook(int keycode, t_data *data)
 
 	if (keycode == KEY_ESC)
 		return (close_hook(data));
-	shift_x = (data->viewport.max_real - data->viewport.min_real) * 0.1;
-	shift_y = (data->viewport.max_imag - data->viewport.min_imag) * 0.1;
+	shift_x = (data->viewport.max_real - data->viewport.min_real) * MOVE_SPEED;
+	shift_y = (data->viewport.max_imag - data->viewport.min_imag) * MOVE_SPEED;
 
 	if (keycode == KEY_LEFT)
 		move_view(data, -shift_x, 0);
@@ -190,10 +188,10 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 	mouse_real = pixel_to_real(x, data);
 	mouse_imag = pixel_to_imag(y, data);
 
-	if (button == 4)
-		zoom = 0.8;
-	else if (button == 5)
-		zoom = 1.25;
+	if (button == MOUSE_SCROLL_UP)
+		zoom = ZOOM_IN;
+	else if (button == MOUSE_SCROLL_DOWN)
+		zoom = ZOOM_OUT;
 	else
 		return (0);
 
@@ -215,7 +213,7 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 	return (0);
 }
 
-// コマンドライン引数の検証と初期化
+// コマンドラ���ン引数の検証と初期化
 // * mandelbrot: ./fractol mandelbrot
 // * julia: ./fractol julia <real> <imag>
 int	param_check(int argc, char **argv, t_data *data)
@@ -229,7 +227,7 @@ int	param_check(int argc, char **argv, t_data *data)
 	}
 	if (ft_strcmp(argv[1], "mandelbrot") == 0)
 	{
-		data->fractal.type = 0;
+		data->fractal.type = FRACTAL_MANDELBROT;
 		return (1);
 	}
 	else if (ft_strcmp(argv[1], "julia") == 0)
@@ -240,7 +238,7 @@ int	param_check(int argc, char **argv, t_data *data)
 			ft_putstr_fd("Usage: ./fractol julia <c_real> <c_imag>\n", 2);
 			return (0);
 		}
-		data->fractal.type = 1;
+		data->fractal.type = FRACTAL_JULIA;
 		data->fractal.julia_c_real = ft_atold(argv[2]);
 		data->fractal.julia_c_imag = ft_atold(argv[3]);
 		return (1);
@@ -258,13 +256,13 @@ int	parse_and_init(int argc, char **argv, t_data *data)
 {
 	if (!param_check(argc, argv, data))
 		return (0);
-	data->width = 800;
-	data->height = 600;
-	data->viewport.min_real = -2.0;
-	data->viewport.max_real = 1.0;
-	data->viewport.min_imag = -1.5;
-	data->viewport.max_imag = 1.5;
-	data->fractal.max_iter = 500;
+	data->width = WIN_WIDTH;
+	data->height = WIN_HEIGHT;
+	data->viewport.min_real = DEFAULT_MIN_REAL;
+	data->viewport.max_real = DEFAULT_MAX_REAL;
+	data->viewport.min_imag = DEFAULT_MIN_IMAG;
+	data->viewport.max_imag = DEFAULT_MAX_IMAG;
+	data->fractal.max_iter = DEFAULT_MAX_ITER;
 	return (1);
 }
 
@@ -274,7 +272,7 @@ int	setup_window(t_data *data)
 	data->mlx = mlx_init();
 	if (!data->mlx)
 		return (0);
-	data->window = mlx_new_window(data->mlx, 800, 600, "fract-ol");
+	data->window = mlx_new_window(data->mlx, WIN_WIDTH, WIN_HEIGHT, WIN_TITLE);
 	if (!data->window)
 		return (0);
 	data->img.img = mlx_new_image(data->mlx, data->width, data->height);
@@ -284,7 +282,7 @@ int	setup_window(t_data *data)
 			&data->img.line_length, &data->img.endian);
 	if (!data->img.addr)
 		return (0);
-	mlx_hook(data->window, 17, 0, close_hook, data);
+	mlx_hook(data->window, EVENT_CLOSE, 0, close_hook, data);
 	mlx_key_hook(data->window, key_hook, data);
 	mlx_mouse_hook(data->window, mouse_hook, data);
 	return (1);
