@@ -6,39 +6,13 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 13:12:16 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 17:13:16 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 // TODO: 全て後でリファクタリングするので、main.cに書く
 
 #include "fractol.h"
-
-typedef struct s_img
-{
-	void	*img;
-	char	*addr;
-	int		bits_per_pixel;
-	int		line_length;
-	int		endian;
-}			t_img;
-
-typedef struct s_data
-{
-	void		*mlx;
-	void		*window;
-	t_img		img;
-	int			width;
-	int			height;
-	long double	min_real;
-	long double	max_real;
-	long double	min_imag;
-	long double	max_imag;
-	int			max_iter;
-	int			fractal_type;
-	long double	julia_c_real;
-	long double	julia_c_imag;
-}			t_data;
 
 // 指定された座標に色を書き込む
 // * NOTE: 範囲チェックは呼び出し側でする。中でするとパフォーマンス落ちる
@@ -86,10 +60,10 @@ int	julia(long double z_real, long double z_imag, t_data *data)
 	int			iter;
 
 	iter = 0;
-	while (z_real * z_real + z_imag * z_imag <= 4.0 && iter < data->max_iter)
+	while (z_real * z_real + z_imag * z_imag <= 4.0 && iter < data->fractal.max_iter)
 	{
-		tmp_real = z_real * z_real - z_imag * z_imag + data->julia_c_real;
-		z_imag = 2.0 * z_real * z_imag + data->julia_c_imag;
+		tmp_real = z_real * z_real - z_imag * z_imag + data->fractal.julia_c_real;
+		z_imag = 2.0 * z_real * z_imag + data->fractal.julia_c_imag;
 		z_real = tmp_real;
 		iter++;
 	}
@@ -100,13 +74,13 @@ int	julia(long double z_real, long double z_imag, t_data *data)
 // * 座標から褎素数の実部を計算する
 long double	pixel_to_real(int x, t_data *data)
 {
-	return (data->min_real + (long double)x / data->width * (data->max_real - data->min_real));
+	return (data->viewport.min_real + (long double)x / data->width * (data->viewport.max_real - data->viewport.min_real));
 }
 
 // * 座標から褎素数の虚部を計算する
 long double	pixel_to_imag(int y, t_data *data)
 {
-	return (data->min_imag + (long double)y / data->height * (data->max_imag - data->min_imag));
+	return (data->viewport.min_imag + (long double)y / data->height * (data->viewport.max_imag - data->viewport.min_imag));
 }
 
 // * 反復回数から色を決定
@@ -146,11 +120,11 @@ void draw_fractal(t_data *data)
 		{
 			c_real = pixel_to_real(x, data);
 			c_imag = pixel_to_imag(y, data);
-			if (data->fractal_type == 0)
-				iter = mandelbrot(c_real, c_imag, data->max_iter);
+			if (data->fractal.type == 0)
+				iter = mandelbrot(c_real, c_imag, data->fractal.max_iter);
 			else
 				iter = julia(c_real, c_imag, data);
-			color = get_color(iter, data->max_iter);
+			color = get_color(iter, data->fractal.max_iter);
 			put_pixel(&data->img, x, y, color);
 			x++;
 		}
@@ -162,10 +136,10 @@ void draw_fractal(t_data *data)
 // 移動処理
 void	move_view(t_data *data, long double shift_real, long double shift_imag)
 {
-	data->min_real += shift_real;
-	data->max_real += shift_real;
-	data->min_imag += shift_imag;
-	data->max_imag += shift_imag;
+	data->viewport.min_real += shift_real;
+	data->viewport.max_real += shift_real;
+	data->viewport.min_imag += shift_imag;
+	data->viewport.max_imag += shift_imag;
 	draw_fractal(data);
 }
 
@@ -186,8 +160,8 @@ int	key_hook(int keycode, t_data *data)
 
 	if (keycode == KEY_ESC)
 		return (close_hook(data));
-	shift_x = (data->max_real - data->min_real) * 0.1;
-	shift_y = (data->max_imag - data->min_imag) * 0.1;
+	shift_x = (data->viewport.max_real - data->viewport.min_real) * 0.1;
+	shift_y = (data->viewport.max_imag - data->viewport.min_imag) * 0.1;
 
 	if (keycode == KEY_LEFT)
 		move_view(data, -shift_x, 0);
@@ -224,18 +198,18 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 		return (0);
 
 	// 新しい範囲を計算
-	new_width = (data->max_real - data->min_real) * zoom;
-	new_height = (data->max_imag - data->min_imag) * zoom;
+	new_width = (data->viewport.max_real - data->viewport.min_real) * zoom;
+	new_height = (data->viewport.max_imag - data->viewport.min_imag) * zoom;
 
 	// マウス位置の相対比率（画面内のどこにあるか）
 	ratio_x = (double)x / data->width;
 	ratio_y = (double)y / data->height;
 
 	// マウス位置を基準に、新しい中心座標を計算
-	data->min_real = mouse_real - new_width * ratio_x;
-	data->max_real = mouse_real + new_width * (1.0 - ratio_x);
-	data->min_imag = mouse_imag - new_height * (1.0 - ratio_y);
-	data->max_imag = mouse_imag + new_height * ratio_y;
+	data->viewport.min_real = mouse_real - new_width * ratio_x;
+	data->viewport.max_real = mouse_real + new_width * (1.0 - ratio_x);
+	data->viewport.min_imag = mouse_imag - new_height * (1.0 - ratio_y);
+	data->viewport.max_imag = mouse_imag + new_height * ratio_y;
 
 	draw_fractal(data);
 	return (0);
@@ -255,7 +229,7 @@ int	param_check(int argc, char **argv, t_data *data)
 	}
 	if (ft_strcmp(argv[1], "mandelbrot") == 0)
 	{
-		data->fractal_type = 0;
+		data->fractal.type = 0;
 		return (1);
 	}
 	else if (ft_strcmp(argv[1], "julia") == 0)
@@ -266,9 +240,9 @@ int	param_check(int argc, char **argv, t_data *data)
 			ft_putstr_fd("Usage: ./fractol julia <c_real> <c_imag>\n", 2);
 			return (0);
 		}
-		data->fractal_type = 1;
-		data->julia_c_real = ft_atold(argv[2]);
-		data->julia_c_imag = ft_atold(argv[3]);
+		data->fractal.type = 1;
+		data->fractal.julia_c_real = ft_atold(argv[2]);
+		data->fractal.julia_c_imag = ft_atold(argv[3]);
 		return (1);
 	}
 	else
@@ -287,11 +261,11 @@ int	main(int argc, char **argv)
 		return (1);
 	data.width = 800;
 	data.height = 600;
-	data.min_real = -2.0;
-	data.max_real = 1.0;
-	data.min_imag = -1.5;
-	data.max_imag = 1.5;
-	data.max_iter = 500;
+	data.viewport.min_real = -2.0;
+	data.viewport.max_real = 1.0;
+	data.viewport.min_imag = -1.5;
+	data.viewport.max_imag = 1.5;
+	data.fractal.max_iter = 500;
 	data.mlx = mlx_init();
 	if (!data.mlx)
 		return (1);
