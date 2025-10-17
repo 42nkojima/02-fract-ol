@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 13:07:46 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 13:12:16 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,15 +159,6 @@ void draw_fractal(t_data *data)
 	mlx_put_image_to_window(data->mlx, data->window, data->img.img, 0, 0);
 }
 
-int cleanup_and_exit(t_data *data)
-{
-	mlx_destroy_window(data->mlx, data->window);
-	mlx_destroy_display(data->mlx);
-	free(data->mlx);
-	exit(0);
-	return (0);
-}
-
 // 移動処理
 void	move_view(t_data *data, long double shift_real, long double shift_imag)
 {
@@ -181,7 +172,10 @@ void	move_view(t_data *data, long double shift_real, long double shift_imag)
 // ウィンドウのxボタンが押された時の処理
 int close_hook(t_data *data)
 {
-	return (cleanup_and_exit(data));
+	mlx_destroy_window(data->mlx, data->window);
+	mlx_destroy_display(data->mlx);
+	free(data->mlx);
+	exit(0);
 }
 
 // ウィンドウを閉じるキーフックを定義
@@ -191,7 +185,7 @@ int	key_hook(int keycode, t_data *data)
 	long double	shift_y;
 
 	if (keycode == KEY_ESC)
-		return (cleanup_and_exit(data));
+		return (close_hook(data));
 	shift_x = (data->max_real - data->min_real) * 0.1;
 	shift_y = (data->max_imag - data->min_imag) * 0.1;
 
