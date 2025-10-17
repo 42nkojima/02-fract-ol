@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 12:16:32 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 12:31:54 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,9 @@ typedef struct s_data
 	long double	min_imag;
 	long double	max_imag;
 	int			max_iter;
+	int			fractal_type;
+	long double	julia_c_real;
+	long double	julia_c_imag;
 }			t_data;
 
 // 指定された座標に色を書き込む
@@ -75,6 +78,24 @@ int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 	return (iter);
 }
 
+// ジュリア集合計算関数
+// * マンデルブロとの違い: z0 = ピクセル座標, c = 固定パラメータ
+int	julia(long double z_real, long double z_imag, t_data *data)
+{
+	long double	tmp_real;
+	int			iter;
+
+	iter = 0;
+	while (z_real * z_real + z_imag * z_imag <= 4.0 && iter < data->max_iter)
+	{
+		tmp_real = z_real * z_real - z_imag * z_imag + data->julia_c_real;
+		z_imag = 2.0 * z_real * z_imag + data->julia_c_imag;
+		z_real = tmp_real;
+		iter++;
+	}
+	return (iter);
+}
+
 // 座標変換関数 (ピクセル -> 複素数)
 // * 座標から褎素数の実部を計算する
 long double	pixel_to_real(int x, t_data *data)
@@ -107,8 +128,8 @@ int get_color(int iter, int max_iter)
 	return ((r << 16) | (g << 8) | b);
 }
 
-// * マンデルブロ集合を描画
-void draw_mandelbrot(t_data *data)
+// * フラクタル集合を描画
+void draw_fractal(t_data *data)
 {
 	int			x;
 	int			y;
@@ -125,7 +146,10 @@ void draw_mandelbrot(t_data *data)
 		{
 			c_real = pixel_to_real(x, data);
 			c_imag = pixel_to_imag(y, data);
-			iter = mandelbrot(c_real, c_imag, data->max_iter);
+			if (data->fractal_type == 0)
+				iter = mandelbrot(c_real, c_imag, data->max_iter);
+			else
+				iter = julia(c_real, c_imag, data);
 			color = get_color(iter, data->max_iter);
 			put_pixel(&data->img, x, y, color);
 			x++;
@@ -151,7 +175,7 @@ void	move_view(t_data *data, long double shift_real, long double shift_imag)
 	data->max_real += shift_real;
 	data->min_imag += shift_imag;
 	data->max_imag += shift_imag;
-	draw_mandelbrot(data);
+	draw_fractal(data);
 }
 
 // ウィンドウのxボタンが押された時の処理
@@ -219,14 +243,54 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 	data->min_imag = mouse_imag - new_height * (1.0 - ratio_y);
 	data->max_imag = mouse_imag + new_height * ratio_y;
 
-	draw_mandelbrot(data);
+	draw_fractal(data);
 	return (0);
 }
 
-int	main(void)
+// コマンドライン引数の検証と初期化
+// * mandelbrot: ./fractol mandelbrot
+// * julia: ./fractol julia <real> <imag>
+int	param_check(int argc, char **argv, t_data *data)
+{
+	if (argc < 2)
+	{
+		ft_putstr_fd("Usage: ./fractol <fractal_type> [parameters]\n", 2);
+		ft_putstr_fd("  mandelbrot: ./fractol mandelbrot\n", 2);
+		ft_putstr_fd("  julia: ./fractol julia <c_real> <c_imag>\n", 2);
+		return (0);
+	}
+	if (ft_strcmp(argv[1], "mandelbrot") == 0)
+	{
+		data->fractal_type = 0;
+		return (1);
+	}
+	else if (ft_strcmp(argv[1], "julia") == 0)
+	{
+		if (argc != 4)
+		{
+			ft_putstr_fd("Error: julia requires 2 parameters\n", 2);
+			ft_putstr_fd("Usage: ./fractol julia <c_real> <c_imag>\n", 2);
+			return (0);
+		}
+		data->fractal_type = 1;
+		data->julia_c_real = ft_atold(argv[2]);
+		data->julia_c_imag = ft_atold(argv[3]);
+		return (1);
+	}
+	else
+	{
+		ft_putstr_fd("Error: unknown fractal type\n", 2);
+		ft_putstr_fd("Available types: mandelbrot, julia\n", 2);
+		return (0);
+	}
+}
+
+int	main(int argc, char **argv)
 {
 	t_data	data;
 
+	if (!param_check(argc, argv, &data))
+		return (1);
 	data.width = 800;
 	data.height = 600;
 	data.min_real = -2.0;
@@ -250,7 +314,7 @@ int	main(void)
 	mlx_hook(data.window, 17, 0, close_hook, &data);
 	mlx_key_hook(data.window, key_hook, &data);
 	mlx_mouse_hook(data.window, mouse_hook, &data);
-	draw_mandelbrot(&data);
+	draw_fractal(&data);
 	mlx_loop(data.mlx);
 	return (0);
 }

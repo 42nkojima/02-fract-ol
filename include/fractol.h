@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:44:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/15 16:38:54 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 12:35:01 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,5 +21,6 @@
 
 #include <mlx.h>
 #include <stdlib.h>
+#include "libft.h"
 
 #endif
