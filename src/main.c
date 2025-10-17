@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 12:31:54 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 13:07:46 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,11 +198,11 @@ int	key_hook(int keycode, t_data *data)
 	if (keycode == KEY_LEFT)
 		move_view(data, -shift_x, 0);
 	else if (keycode == KEY_UP)
-		move_view(data, 0, shift_y);
+		move_view(data, 0, -shift_y);
 	else if (keycode == KEY_RIGHT)
 		move_view(data, shift_x, 0);
 	else if (keycode == KEY_DOWN)
-		move_view(data, 0, -shift_y);
+		move_view(data, 0, shift_y);
 
 	return (0);
 }

@@ -6,7 +6,7 @@
 #    By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/05 18:18:21 by nkojima           #+#    #+#              #
-#    Updated: 2025/10/14 11:25:39 by nkojima          ###   ########.fr        #
+#    Updated: 2025/10/17 12:47:10 by nkojima          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,7 +68,7 @@ $(NAME): $(OBJ_FILES) $(LIBFT) $(MLX)
 	@echo "$(NAME): $(GREEN)object files were created $(RESET)"
 	@echo "$(NAME): $(GREEN)$(NAME) was created$(RESET)"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(MLX_PATH)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(LIBFT_PATH) $(MLX_PATH)
 	@mkdir -p $(OBJ_DIR)
 	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(LIBFT_PATH) -I$(MLX_PATH) -c -o $@ $<
 	@echo "$(NAME): $(GREEN)$(OBJ_DIR) was created$(RESET)"
