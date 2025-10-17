@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 17:13:16 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/17 17:27:11 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,36 +253,58 @@ int	param_check(int argc, char **argv, t_data *data)
 	}
 }
 
+// 引数解析とデータ初期化
+int	parse_and_init(int argc, char **argv, t_data *data)
+{
+	if (!param_check(argc, argv, data))
+		return (0);
+	data->width = 800;
+	data->height = 600;
+	data->viewport.min_real = -2.0;
+	data->viewport.max_real = 1.0;
+	data->viewport.min_imag = -1.5;
+	data->viewport.max_imag = 1.5;
+	data->fractal.max_iter = 500;
+	return (1);
+}
+
+// ウィンドウとフックの設定
+int	setup_window(t_data *data)
+{
+	data->mlx = mlx_init();
+	if (!data->mlx)
+		return (0);
+	data->window = mlx_new_window(data->mlx, 800, 600, "fract-ol");
+	if (!data->window)
+		return (0);
+	data->img.img = mlx_new_image(data->mlx, data->width, data->height);
+	if (!data->img.img)
+		return (0);
+	data->img.addr = mlx_get_data_addr(data->img.img, &data->img.bits_per_pixel,
+			&data->img.line_length, &data->img.endian);
+	if (!data->img.addr)
+		return (0);
+	mlx_hook(data->window, 17, 0, close_hook, data);
+	mlx_key_hook(data->window, key_hook, data);
+	mlx_mouse_hook(data->window, mouse_hook, data);
+	return (1);
+}
+
+// 描画とイベントループの開始
+void	run_event_loop(t_data *data)
+{
+	draw_fractal(data);
+	mlx_loop(data->mlx);
+}
+
 int	main(int argc, char **argv)
 {
 	t_data	data;
 
-	if (!param_check(argc, argv, &data))
+	if (!parse_and_init(argc, argv, &data))
 		return (1);
-	data.width = 800;
-	data.height = 600;
-	data.viewport.min_real = -2.0;
-	data.viewport.max_real = 1.0;
-	data.viewport.min_imag = -1.5;
-	data.viewport.max_imag = 1.5;
-	data.fractal.max_iter = 500;
-	data.mlx = mlx_init();
-	if (!data.mlx)
+	if (!setup_window(&data))
 		return (1);
-	data.window = mlx_new_window(data.mlx, 800, 600, "fract-ol");
-	if (!data.window)
-		return (1);
-	data.img.img = mlx_new_image(data.mlx, data.width, data.height);
-	if (!data.img.img)
-		return (1);
-	data.img.addr = mlx_get_data_addr(data.img.img, &data.img.bits_per_pixel,
-			&data.img.line_length, &data.img.endian);
-	if (!data.img.addr)
-		return (1);
-	mlx_hook(data.window, 17, 0, close_hook, &data);
-	mlx_key_hook(data.window, key_hook, &data);
-	mlx_mouse_hook(data.window, mouse_hook, &data);
-	draw_fractal(&data);
-	mlx_loop(data.mlx);
+	run_event_loop(&data);
 	return (0);
 }
