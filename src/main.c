@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 17:34:35 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 17:40:50 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,12 +141,24 @@ void	move_view(t_data *data, long double shift_real, long double shift_imag)
 	draw_fractal(data);
 }
 
+// MinilibXリソースの解放
+void	free_mlx_resources(t_data *data)
+{
+	if (data->img.img)
+		mlx_destroy_image(data->mlx, data->img.img);
+	if (data->window)
+		mlx_destroy_window(data->mlx, data->window);
+	if (data->mlx)
+	{
+		mlx_destroy_display(data->mlx);
+		free(data->mlx);
+	}
+}
+
 // ウィンドウのxボタンが押された時の処理
 int close_hook(t_data *data)
 {
-	mlx_destroy_window(data->mlx, data->window);
-	mlx_destroy_display(data->mlx);
-	free(data->mlx);
+	free_mlx_resources(data);
 	exit(0);
 }
 
@@ -184,7 +196,7 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 	long double	ratio_x;
 	long double	ratio_y;
 
-	// マウス位置の複素数座標を計算
+	// マウ���位置の複素数座標を計算
 	mouse_real = pixel_to_real(x, data);
 	mouse_imag = pixel_to_imag(y, data);
 
@@ -274,14 +286,14 @@ int	setup_window(t_data *data)
 		return (0);
 	data->window = mlx_new_window(data->mlx, WIN_WIDTH, WIN_HEIGHT, WIN_TITLE);
 	if (!data->window)
-		return (0);
+		return (free_mlx_resources(data), 0);
 	data->img.img = mlx_new_image(data->mlx, data->width, data->height);
 	if (!data->img.img)
-		return (0);
+		return (free_mlx_resources(data), 0);
 	data->img.addr = mlx_get_data_addr(data->img.img, &data->img.bits_per_pixel,
 			&data->img.line_length, &data->img.endian);
 	if (!data->img.addr)
-		return (0);
+		return (free_mlx_resources(data), 0);
 	mlx_hook(data->window, EVENT_CLOSE, 0, close_hook, data);
 	mlx_key_hook(data->window, key_hook, data);
 	mlx_mouse_hook(data->window, mouse_hook, data);
