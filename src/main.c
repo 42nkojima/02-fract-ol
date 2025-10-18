@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/18 18:01:44 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 18:04:17 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 
 #include "fractol.h"
 
-// 指定された座標に色を書き込む
-// * NOTE: 範囲チェックは呼び出し側でする。中でするとパフォーマンス落ちる
 void	put_pixel(t_img *img, int x, int y, int color)
 {
 	int		bytes_per_pixel;
@@ -28,9 +26,6 @@ void	put_pixel(t_img *img, int x, int y, int color)
 	*(unsigned int *)pixel = color;
 }
 
-// マンデルブロ計算関数
-//
-	* https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%B3%E3%83%87%E3%83%AB%E3%83%96%E3%83%AD%E9%9B%86%E5%90%88
 int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 {
 	long double	z_real;
@@ -52,8 +47,6 @@ int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 	return (iter);
 }
 
-// ジュリア集合計算関数
-// * マンデルブロとの違い: z0 = ピクセル座標, c = 固定パラメータ
 int	julia(long double z_real, long double z_imag, t_data *data)
 {
 	long double	tmp_real;
@@ -72,23 +65,18 @@ int	julia(long double z_real, long double z_imag, t_data *data)
 	return (iter);
 }
 
-// 座標変換関数 (ピクセル -> 複素数)
-// * 座標から褎素数の実部を計算する
 long double	pixel_to_real(int x, t_data *data)
 {
 	return (data->viewport.min_real + (long double)x / data->width
 		* (data->viewport.max_real - data->viewport.min_real));
 }
 
-// * 座標から褎素数の虚部を計算する
 long double	pixel_to_imag(int y, t_data *data)
 {
 	return (data->viewport.min_imag + (long double)y / data->height
 		* (data->viewport.max_imag - data->viewport.min_imag));
 }
 
-// * 反復回数から色を決定
-// TODO: 後で色を変える
 int	get_color(int iter, int max_iter)
 {
 	int		r;
@@ -105,7 +93,6 @@ int	get_color(int iter, int max_iter)
 	return ((r << 16) | (g << 8) | b);
 }
 
-// 1ピクセルの計算と描画
 void	calculate_pixel(t_data *data, int x, int y)
 {
 	long double	c_real;
@@ -123,7 +110,6 @@ void	calculate_pixel(t_data *data, int x, int y)
 	put_pixel(&data->img, x, y, color);
 }
 
-// フラクタル集合を描画
 void	draw_fractal(t_data *data)
 {
 	int	x;
@@ -143,7 +129,6 @@ void	draw_fractal(t_data *data)
 	mlx_put_image_to_window(data->mlx, data->window, data->img.img, 0, 0);
 }
 
-// 移動処理
 void	move_view(t_data *data, long double shift_real, long double shift_imag)
 {
 	data->viewport.min_real += shift_real;
@@ -153,7 +138,6 @@ void	move_view(t_data *data, long double shift_real, long double shift_imag)
 	draw_fractal(data);
 }
 
-// MinilibXリソースの解放
 void	free_mlx_resources(t_data *data)
 {
 	if (data->img.img)
@@ -167,14 +151,12 @@ void	free_mlx_resources(t_data *data)
 	}
 }
 
-// ウィンドウのxボタンが押された時の処理
 int	close_hook(t_data *data)
 {
 	free_mlx_resources(data);
 	exit(0);
 }
 
-// ウィンドウを閉じるキーフックを定義
 int	key_hook(int keycode, t_data *data)
 {
 	long double	shift_x;
@@ -195,7 +177,6 @@ int	key_hook(int keycode, t_data *data)
 	return (0);
 }
 
-// ズーム計算と適用
 void	apply_zoom(t_data *data, int x, int y, long double zoom)
 {
 	long double	mouse_real;
@@ -217,7 +198,6 @@ void	apply_zoom(t_data *data, int x, int y, long double zoom)
 			/ data->height);
 }
 
-// マウスの位置を中心にズーム
 int	mouse_hook(int button, int x, int y, t_data *data)
 {
 	long double	zoom;
@@ -233,9 +213,6 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 	return (0);
 }
 
-// コマンドライン引数の検証と初期化
-// * mandelbrot: ./fractol mandelbrot
-// * julia: ./fractol julia <real> <imag>
 int	param_check(int argc, char **argv, t_data *data)
 {
 	if (argc < 2)
@@ -271,7 +248,6 @@ int	param_check(int argc, char **argv, t_data *data)
 	}
 }
 
-// 引数解析とデータ初期化
 int	parse_and_init(int argc, char **argv, t_data *data)
 {
 	if (!param_check(argc, argv, data))
@@ -286,7 +262,6 @@ int	parse_and_init(int argc, char **argv, t_data *data)
 	return (1);
 }
 
-// ウィンドウとフックの設定
 int	setup_window(t_data *data)
 {
 	data->mlx = mlx_init();
@@ -308,7 +283,6 @@ int	setup_window(t_data *data)
 	return (1);
 }
 
-// 描画とイベントループの開始
 void	run_event_loop(t_data *data)
 {
 	draw_fractal(data);
