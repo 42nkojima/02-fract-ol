@@ -53,7 +53,8 @@ SRCS = main.c \
        render.c \
        utils.c \
        hooks.c \
-       init.c
+       parse.c \
+       window.c
 OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 # ===============================

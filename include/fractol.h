@@ -118,13 +118,15 @@ int				key_hook(int keycode, t_data *data);
 void			apply_zoom(t_data *data, int x, int y, long double zoom);
 int				mouse_hook(int button, int x, int y, t_data *data);
 
-// init.c
-void			free_mlx_resources(t_data *data);
+// parse.c
 void			print_usage(void);
 void			print_julia_error(void);
 int				init_julia(int argc, char **argv, t_data *data);
 int				param_check(int argc, char **argv, t_data *data);
 int				parse_and_init(int argc, char **argv, t_data *data);
+
+// window.c
+void			free_mlx_resources(t_data *data);
 int				setup_window(t_data *data);
 
 // main.c
