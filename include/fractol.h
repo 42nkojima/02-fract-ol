@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:44:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/17 12:35:01 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 18:30:11 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,5 +94,40 @@ typedef struct s_data
 	t_viewport	viewport;
 	t_fractal	fractal;
 }				t_data;
+
+// fractal.c
+int				mandelbrot(long double c_real, long double c_imag,
+					int max_iter);
+int				julia(long double z_real, long double z_imag, t_data *data);
+
+// render.c
+void			put_pixel(t_img *img, int x, int y, int color);
+int				get_color(int iter, int max_iter);
+void			calculate_pixel(t_data *data, int x, int y);
+void			draw_fractal(t_data *data);
+
+// utils.c
+long double		pixel_to_real(int x, t_data *data);
+long double		pixel_to_imag(int y, t_data *data);
+
+// hooks.c
+void			move_view(t_data *data, long double shift_real,
+					long double shift_imag);
+int				close_hook(t_data *data);
+int				key_hook(int keycode, t_data *data);
+void			apply_zoom(t_data *data, int x, int y, long double zoom);
+int				mouse_hook(int button, int x, int y, t_data *data);
+
+// init.c
+void			free_mlx_resources(t_data *data);
+void			print_usage(void);
+void			print_julia_error(void);
+int				init_julia(int argc, char **argv, t_data *data);
+int				param_check(int argc, char **argv, t_data *data);
+int				parse_and_init(int argc, char **argv, t_data *data);
+int				setup_window(t_data *data);
+
+// main.c
+void			run_event_loop(t_data *data);
 
 #endif

@@ -1,31 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
+/*   Created: 2025/10/18 18:25:00 by nkojima           #+#    #+#             */
 /*   Updated: 2025/10/18 18:25:00 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-void	run_event_loop(t_data *data)
+long double	pixel_to_real(int x, t_data *data)
 {
-	draw_fractal(data);
-	mlx_loop(data->mlx);
+	return (data->viewport.min_real + (long double)x / data->width
+		* (data->viewport.max_real - data->viewport.min_real));
 }
 
-int	main(int argc, char **argv)
+long double	pixel_to_imag(int y, t_data *data)
 {
-	t_data	data;
-
-	if (!parse_and_init(argc, argv, &data))
-		return (1);
-	if (!setup_window(&data))
-		return (1);
-	run_event_loop(&data);
-	return (0);
+	return (data->viewport.min_imag + (long double)y / data->height
+		* (data->viewport.max_imag - data->viewport.min_imag));
 }

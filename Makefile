@@ -48,7 +48,12 @@ INCLUDE_DIR = include
 # ===============================
 #         Source Files          #
 # ===============================
-SRCS = main.c
+SRCS = main.c \
+       fractal.c \
+       render.c \
+       utils.c \
+       hooks.c \
+       init.c
 OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 # ===============================
