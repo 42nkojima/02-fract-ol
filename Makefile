@@ -6,7 +6,7 @@
 #    By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/05 18:18:21 by nkojima           #+#    #+#              #
-#    Updated: 2025/10/18 18:57:52 by nkojima          ###   ########.fr        #
+#    Updated: 2025/10/18 19:33:15 by nkojima          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,7 +36,6 @@ endif
 # ===============================
 LIBS_DIR = libs
 LIBFT_PATH = $(LIBS_DIR)/libft
-PRINTF_PATH = $(LIBS_DIR)/ft_printf
 MLX_PATH = $(LIBS_DIR)/minilibx
 
 SRC_DIR = src
@@ -59,7 +58,6 @@ OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 #            Libraries          #
 # ===============================
 LIBFT = $(LIBFT_PATH)/libft.a
-PRINTF = $(PRINTF_PATH)/ft_printf.a
 MLX = $(MLX_PATH)/libmlx.a
 
 # ===============================
