@@ -6,7 +6,7 @@
 #    By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/05 18:18:21 by nkojima           #+#    #+#              #
-#    Updated: 2025/10/18 19:33:15 by nkojima          ###   ########.fr        #
+#    Updated: 2025/10/18 19:47:00 by nkojima          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,6 +15,7 @@
 # ===============================
 GREEN = \033[0;32m
 RED = \033[0;31m
+YELLOW = \033[0;33m
 RESET = \033[0m
 
 # ===============================
@@ -68,31 +69,31 @@ all: $(NAME)
 $(NAME): $(OBJ_FILES) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) -o $@ $(OBJ_FILES) -L$(LIBFT_PATH) -lft $(LDFLAGS)
 	@echo "$(NAME): $(GREEN)object files were created $(RESET)"
-	@echo "$(NAME): $(GREEN)$(NAME) was created$(RESET)"
+	@echo "$(NAME): $(YELLOW)$(NAME)$(RESET) $(GREEN)was created$(RESET)"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(LIBFT_PATH) $(MLX_PATH)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(LIBFT) $(MLX)
 	@mkdir -p $(OBJ_DIR)
 	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(LIBFT_PATH) -I$(MLX_PATH) -c -o $@ $<
-	@echo "$(NAME): $(GREEN)$(OBJ_DIR) was created$(RESET)"
+	@echo "$(NAME): $(YELLOW)$@$(RESET) $(GREEN)was created$(RESET)"
 
 # ===============================
 #       Library Dependencies    #
 # ===============================
 $(LIBFT): | $(LIBFT_PATH)
 	@$(MAKE) -C $(LIBFT_PATH)
-	@echo "$(NAME): $(GREEN)$(LIBFT) was created$(RESET)"
+	@echo "$(NAME): $(YELLOW)$(LIBFT)$(RESET) $(GREEN)was created$(RESET)"
 
 $(LIBFT_PATH):
 	@git clone git@github.com:42nkojima/00-libft.git $(LIBFT_PATH)
-	@echo "$(NAME): $(GREEN)$(LIBFT_PATH) was cloned$(RESET)"
+	@echo "$(NAME): $(YELLOW)$(LIBFT_PATH)$(RESET) $(GREEN)was cloned$(RESET)"
 
 $(MLX): | $(MLX_PATH)
 	@$(MAKE) -C $(MLX_PATH)
-	@echo "$(NAME): $(GREEN)$(MLX) was created$(RESET)"
+	@echo "$(NAME): $(YELLOW)$(MLX)$(RESET) $(GREEN)was created$(RESET)"
 
 $(MLX_PATH):
 	@git clone https://github.com/42paris/minilibx-linux.git $(MLX_PATH)
-	@echo "$(NAME): $(GREEN)$(MLX_PATH) was cloned$(RESET)"
+	@echo "$(NAME): $(YELLOW)$(MLX_PATH)$(RESET) $(GREEN)was cloned$(RESET)"
 
 # ===============================
 #         Clean Rules           #
@@ -101,25 +102,25 @@ clean:
 	@if [ -d $(LIBFT_PATH) ]; then $(MAKE) -C $(LIBFT_PATH) clean; fi
 	@if [ -d $(OBJ_DIR) ]; then \
 		rm -rf $(OBJ_DIR); \
-		echo "$(NAME): $(RED)$(OBJ_DIR) was deleted$(RESET)"; \
+		echo "$(NAME): $(YELLOW)$(OBJ_DIR)$(RESET) $(RED)was deleted$(RESET)"; \
 	fi
 
 fclean: clean
 	@if [ -d $(LIBFT_PATH) ]; then $(MAKE) -C $(LIBFT_PATH) fclean; fi
 	@if [ -f $(NAME) ]; then \
 		rm -f $(NAME); \
-		echo "$(NAME): $(RED)$(NAME) was deleted$(RESET)"; \
+		echo "$(NAME): $(YELLOW)$(NAME)$(RESET) $(RED)was deleted$(RESET)"; \
 	fi
 
 # Include libraries in clean
 distclean: fclean
 	@if [ -d $(MLX_PATH) ]; then \
 		rm -rf $(MLX_PATH); \
-		echo "$(NAME): $(RED)$(MLX_PATH) was deleted$(RESET)"; \
+		echo "$(NAME): $(YELLOW)$(MLX_PATH)$(RESET) $(RED)was deleted$(RESET)"; \
 	fi
 	@if [ -d $(LIBFT_PATH) ]; then \
 		rm -rf $(LIBFT_PATH); \
-		echo "$(NAME): $(RED)$(LIBFT_PATH) was deleted$(RESET)"; \
+		echo "$(NAME): $(YELLOW)$(LIBFT_PATH)$(RESET) $(RED)was deleted$(RESET)"; \
 	fi
 
 re: fclean all
