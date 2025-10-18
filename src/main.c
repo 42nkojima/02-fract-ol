@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/18 17:50:33 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 17:53:05 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,15 +100,29 @@ int get_color(int iter, int max_iter)
 	return ((r << 16) | (g << 8) | b);
 }
 
-// * フラクタル集合を描画
-void draw_fractal(t_data *data)
+// 1ピクセルの計算と描画
+void	calculate_pixel(t_data *data, int x, int y)
 {
-	int			x;
-	int			y;
 	long double	c_real;
 	long double	c_imag;
 	int			iter;
 	int			color;
+
+	c_real = pixel_to_real(x, data);
+	c_imag = pixel_to_imag(y, data);
+	if (data->fractal.type == FRACTAL_MANDELBROT)
+		iter = mandelbrot(c_real, c_imag, data->fractal.max_iter);
+	else
+		iter = julia(c_real, c_imag, data);
+	color = get_color(iter, data->fractal.max_iter);
+	put_pixel(&data->img, x, y, color);
+}
+
+// フラクタル集合を描画
+void draw_fractal(t_data *data)
+{
+	int	x;
+	int	y;
 
 	y = 0;
 	while (y < data->height)
@@ -116,14 +130,7 @@ void draw_fractal(t_data *data)
 		x = 0;
 		while (x < data->width)
 		{
-			c_real = pixel_to_real(x, data);
-			c_imag = pixel_to_imag(y, data);
-			if (data->fractal.type == FRACTAL_MANDELBROT)
-				iter = mandelbrot(c_real, c_imag, data->fractal.max_iter);
-			else
-				iter = julia(c_real, c_imag, data);
-			color = get_color(iter, data->fractal.max_iter);
-			put_pixel(&data->img, x, y, color);
+			calculate_pixel(data, x, y);
 			x++;
 		}
 		y++;
