@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/18 18:07:40 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 18:19:28 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,13 +213,38 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 	return (0);
 }
 
+void	print_usage(void)
+{
+	ft_putstr_fd("Usage: ./fractol <fractal_type> [parameters]\n", 2);
+	ft_putstr_fd("  mandelbrot: ./fractol mandelbrot\n", 2);
+	ft_putstr_fd("  julia: ./fractol julia <c_real> <c_imag>\n", 2);
+}
+
+void	print_julia_error(void)
+{
+	ft_putstr_fd("Error: julia requires 2 parameters\n", 2);
+	ft_putstr_fd("Usage: ./fractol julia <c_real> <c_imag>\n", 2);
+	ft_putstr_fd("Example: ./fractol julia -0.7 0.27015\n", 2);
+}
+
+int	init_julia(int argc, char **argv, t_data *data)
+{
+	if (argc != 4)
+	{
+		print_julia_error();
+		return (0);
+	}
+	data->fractal.type = FRACTAL_JULIA;
+	data->fractal.julia_c_real = ft_atold(argv[2]);
+	data->fractal.julia_c_imag = ft_atold(argv[3]);
+	return (1);
+}
+
 int	param_check(int argc, char **argv, t_data *data)
 {
 	if (argc < 2)
 	{
-		ft_putstr_fd("Usage: ./fractol <fractal_type> [parameters]\n", 2);
-		ft_putstr_fd("  mandelbrot: ./fractol mandelbrot\n", 2);
-		ft_putstr_fd("  julia: ./fractol julia <c_real> <c_imag>\n", 2);
+		print_usage();
 		return (0);
 	}
 	if (ft_strcmp(argv[1], "mandelbrot") == 0)
@@ -228,19 +253,7 @@ int	param_check(int argc, char **argv, t_data *data)
 		return (1);
 	}
 	else if (ft_strcmp(argv[1], "julia") == 0)
-	{
-		if (argc != 4)
-		{
-			ft_putstr_fd("Error: julia requires 2 parameters\n", 2);
-			ft_putstr_fd("Usage: ./fractol julia <c_real> <c_imag>\n", 2);
-			ft_putstr_fd("Example: ./fractol julia -0.7 0.27015\n", 2);
-			return (0);
-		}
-		data->fractal.type = FRACTAL_JULIA;
-		data->fractal.julia_c_real = ft_atold(argv[2]);
-		data->fractal.julia_c_imag = ft_atold(argv[3]);
-		return (1);
-	}
+		return (init_julia(argc, argv, data));
 	else
 	{
 		ft_putstr_fd("Error: unknown fractal type\n", 2);
