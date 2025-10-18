@@ -6,7 +6,7 @@
 #    By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/05 18:18:21 by nkojima           #+#    #+#              #
-#    Updated: 2025/10/17 12:47:10 by nkojima          ###   ########.fr        #
+#    Updated: 2025/10/18 18:57:52 by nkojima          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,15 +21,13 @@ RESET = \033[0m
 #            Settings           #
 # ===============================
 NAME = fractol
-CFLAGS = -Wall -Werror -Wextra
+CFLAGS = -Wall -Werror -Wextra -O2
 
 # OS Detection
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    CFLAGS = -Wall -Werror -Wextra
     LDFLAGS = -L$(MLX_PATH) -lmlx -lXext -lX11 -lm
 else ifeq ($(UNAME_S),Darwin)
-    CFLAGS = -Wall -Werror -Wextra
     LDFLAGS = -L$(MLX_PATH) -lmlx -L/opt/X11/lib -lXext -lX11 -framework OpenGL -framework AppKit
 endif
 
