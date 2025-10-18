@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/18 18:04:17 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 18:07:40 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,6 +233,7 @@ int	param_check(int argc, char **argv, t_data *data)
 		{
 			ft_putstr_fd("Error: julia requires 2 parameters\n", 2);
 			ft_putstr_fd("Usage: ./fractol julia <c_real> <c_imag>\n", 2);
+			ft_putstr_fd("Example: ./fractol julia -0.7 0.27015\n", 2);
 			return (0);
 		}
 		data->fractal.type = FRACTAL_JULIA;
