@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/18 17:53:05 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 18:01:44 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 // * NOTE: 範囲チェックは呼び出し側でする。中でするとパフォーマンス落ちる
 void	put_pixel(t_img *img, int x, int y, int color)
 {
-	int bytes_per_pixel;
-	int offset;
+	int		bytes_per_pixel;
+	int		offset;
 	char	*pixel;
 
 	bytes_per_pixel = img->bits_per_pixel / 8;
@@ -29,7 +29,8 @@ void	put_pixel(t_img *img, int x, int y, int color)
 }
 
 // マンデルブロ計算関数
-// * https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%B3%E3%83%87%E3%83%AB%E3%83%96%E3%83%AD%E9%9B%86%E5%90%88
+//
+	* https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%B3%E3%83%87%E3%83%AB%E3%83%96%E3%83%AD%E9%9B%86%E5%90%88
 int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 {
 	long double	z_real;
@@ -40,7 +41,8 @@ int	mandelbrot(long double c_real, long double c_imag, int max_iter)
 	z_real = 0.0;
 	z_imag = 0.0;
 	iter = 0;
-	while (z_real * z_real + z_imag * z_imag <= ESCAPE_RADIUS && iter < max_iter)
+	while (z_real * z_real + z_imag * z_imag <= ESCAPE_RADIUS
+		&& iter < max_iter)
 	{
 		tmp_real = z_real * z_real - z_imag * z_imag + c_real;
 		z_imag = 2.0 * z_real * z_imag + c_imag;
@@ -58,9 +60,11 @@ int	julia(long double z_real, long double z_imag, t_data *data)
 	int			iter;
 
 	iter = 0;
-	while (z_real * z_real + z_imag * z_imag <= ESCAPE_RADIUS && iter < data->fractal.max_iter)
+	while (z_real * z_real + z_imag * z_imag <= ESCAPE_RADIUS
+		&& iter < data->fractal.max_iter)
 	{
-		tmp_real = z_real * z_real - z_imag * z_imag + data->fractal.julia_c_real;
+		tmp_real = z_real * z_real - z_imag * z_imag
+			+ data->fractal.julia_c_real;
 		z_imag = 2.0 * z_real * z_imag + data->fractal.julia_c_imag;
 		z_real = tmp_real;
 		iter++;
@@ -72,28 +76,29 @@ int	julia(long double z_real, long double z_imag, t_data *data)
 // * 座標から褎素数の実部を計算する
 long double	pixel_to_real(int x, t_data *data)
 {
-	return (data->viewport.min_real + (long double)x / data->width * (data->viewport.max_real - data->viewport.min_real));
+	return (data->viewport.min_real + (long double)x / data->width
+		* (data->viewport.max_real - data->viewport.min_real));
 }
 
 // * 座標から褎素数の虚部を計算する
 long double	pixel_to_imag(int y, t_data *data)
 {
-	return (data->viewport.min_imag + (long double)y / data->height * (data->viewport.max_imag - data->viewport.min_imag));
+	return (data->viewport.min_imag + (long double)y / data->height
+		* (data->viewport.max_imag - data->viewport.min_imag));
 }
 
 // * 反復回数から色を決定
 // TODO: 後で色を変える
-int get_color(int iter, int max_iter)
+int	get_color(int iter, int max_iter)
 {
-	int r;
-	int g;
-	int b;
-	double t;
+	int		r;
+	int		g;
+	int		b;
+	double	t;
 
 	if (iter == max_iter)
 		return (COLOR_BLACK);
 	t = (double)iter / max_iter;
-
 	r = (int)(9 * (1 - t) * t * t * t * RGB_MAX);
 	g = (int)(15 * (1 - t) * (1 - t) * t * t * RGB_MAX);
 	b = (int)(8.5 * (1 - t) * (1 - t) * (1 - t) * t * RGB_MAX);
@@ -119,7 +124,7 @@ void	calculate_pixel(t_data *data, int x, int y)
 }
 
 // フラクタル集合を描画
-void draw_fractal(t_data *data)
+void	draw_fractal(t_data *data)
 {
 	int	x;
 	int	y;
@@ -163,7 +168,7 @@ void	free_mlx_resources(t_data *data)
 }
 
 // ウィンドウのxボタンが押された時の処理
-int close_hook(t_data *data)
+int	close_hook(t_data *data)
 {
 	free_mlx_resources(data);
 	exit(0);
@@ -179,7 +184,6 @@ int	key_hook(int keycode, t_data *data)
 		return (close_hook(data));
 	shift_x = (data->viewport.max_real - data->viewport.min_real) * MOVE_SPEED;
 	shift_y = (data->viewport.max_imag - data->viewport.min_imag) * MOVE_SPEED;
-
 	if (keycode == KEY_LEFT)
 		move_view(data, -shift_x, 0);
 	else if (keycode == KEY_UP)
@@ -188,7 +192,6 @@ int	key_hook(int keycode, t_data *data)
 		move_view(data, shift_x, 0);
 	else if (keycode == KEY_DOWN)
 		move_view(data, 0, shift_y);
-
 	return (0);
 }
 
@@ -204,10 +207,14 @@ void	apply_zoom(t_data *data, int x, int y, long double zoom)
 	mouse_imag = pixel_to_imag(y, data);
 	new_width = (data->viewport.max_real - data->viewport.min_real) * zoom;
 	new_height = (data->viewport.max_imag - data->viewport.min_imag) * zoom;
-	data->viewport.min_real = mouse_real - new_width * ((double)x / data->width);
-	data->viewport.max_real = mouse_real + new_width * (1.0 - (double)x / data->width);
-	data->viewport.min_imag = mouse_imag - new_height * (1.0 - (double)y / data->height);
-	data->viewport.max_imag = mouse_imag + new_height * ((double)y / data->height);
+	data->viewport.min_real = mouse_real - new_width * ((double)x
+			/ data->width);
+	data->viewport.max_real = mouse_real + new_width * (1.0 - (double)x
+			/ data->width);
+	data->viewport.min_imag = mouse_imag - new_height * (1.0 - (double)y
+			/ data->height);
+	data->viewport.max_imag = mouse_imag + new_height * ((double)y
+			/ data->height);
 }
 
 // マウスの位置を中心にズーム
