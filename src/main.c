@@ -6,7 +6,7 @@
 /*   By: nkojima <nkojima@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:43:00 by nkojima           #+#    #+#             */
-/*   Updated: 2025/10/18 17:40:50 by nkojima          ###   ########.fr       */
+/*   Updated: 2025/10/18 17:50:33 by nkojima          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,20 +185,28 @@ int	key_hook(int keycode, t_data *data)
 	return (0);
 }
 
-// マウスの位置を中心にズーム
-int	mouse_hook(int button, int x, int y, t_data *data)
+// ズーム計算と適用
+void	apply_zoom(t_data *data, int x, int y, long double zoom)
 {
 	long double	mouse_real;
 	long double	mouse_imag;
-	long double	zoom;
 	long double	new_width;
 	long double	new_height;
-	long double	ratio_x;
-	long double	ratio_y;
 
-	// マウ���位置の複素数座標を計算
 	mouse_real = pixel_to_real(x, data);
 	mouse_imag = pixel_to_imag(y, data);
+	new_width = (data->viewport.max_real - data->viewport.min_real) * zoom;
+	new_height = (data->viewport.max_imag - data->viewport.min_imag) * zoom;
+	data->viewport.min_real = mouse_real - new_width * ((double)x / data->width);
+	data->viewport.max_real = mouse_real + new_width * (1.0 - (double)x / data->width);
+	data->viewport.min_imag = mouse_imag - new_height * (1.0 - (double)y / data->height);
+	data->viewport.max_imag = mouse_imag + new_height * ((double)y / data->height);
+}
+
+// マウスの位置を中心にズーム
+int	mouse_hook(int button, int x, int y, t_data *data)
+{
+	long double	zoom;
 
 	if (button == MOUSE_SCROLL_UP)
 		zoom = ZOOM_IN;
@@ -206,26 +214,12 @@ int	mouse_hook(int button, int x, int y, t_data *data)
 		zoom = ZOOM_OUT;
 	else
 		return (0);
-
-	// 新しい範囲を計算
-	new_width = (data->viewport.max_real - data->viewport.min_real) * zoom;
-	new_height = (data->viewport.max_imag - data->viewport.min_imag) * zoom;
-
-	// マウス位置の相対比率（画面内のどこにあるか）
-	ratio_x = (double)x / data->width;
-	ratio_y = (double)y / data->height;
-
-	// マウス位置を基準に、新しい中心座標を計算
-	data->viewport.min_real = mouse_real - new_width * ratio_x;
-	data->viewport.max_real = mouse_real + new_width * (1.0 - ratio_x);
-	data->viewport.min_imag = mouse_imag - new_height * (1.0 - ratio_y);
-	data->viewport.max_imag = mouse_imag + new_height * ratio_y;
-
+	apply_zoom(data, x, y, zoom);
 	draw_fractal(data);
 	return (0);
 }
 
-// コマンドラ���ン引数の検証と初期化
+// コマンドライン引数の検証と初期化
 // * mandelbrot: ./fractol mandelbrot
 // * julia: ./fractol julia <real> <imag>
 int	param_check(int argc, char **argv, t_data *data)
